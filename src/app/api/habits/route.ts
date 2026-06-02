@@ -4,8 +4,19 @@ import { computeHabitStreaks, computeOverallStreak } from "@/lib/streaks";
 import { NextRequest, NextResponse } from "next/server";
 import { startOfDay, format, parseISO, isValid } from "date-fns";
 
-// GET /api/habits?date=YYYY-MM-DD  — get log for a day
-// GET /api/habits?stats=true       — get streaks + weekly XP
+// Shape of the parsed habit updates
+type HabitUpdateData = {
+  exercise?: boolean;
+  meditation?: boolean;
+  nof?: boolean;
+  reading?: boolean;
+  socialising?: boolean;
+  officeWork?: boolean;
+  learning?: boolean;
+  winOfDay?: string;
+  xp?: number;
+};
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -17,7 +28,6 @@ export async function GET(req: NextRequest) {
         computeOverallStreak(),
       ]);
 
-      // Last 30 days XP for heatmap
       const logs = await prisma.dailyLog.findMany({
         orderBy: { date: "desc" },
         take: 60,
@@ -31,7 +41,6 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ habitStreaks, overallStreak, heatmap });
     }
 
-    // Get specific day (default today)
     const dateParam = searchParams.get("date");
     let date: Date;
     if (dateParam) {
@@ -41,10 +50,7 @@ export async function GET(req: NextRequest) {
       date = startOfDay(new Date());
     }
 
-    const log = await prisma.dailyLog.findUnique({
-      where: { date },
-    });
-
+    const log = await prisma.dailyLog.findUnique({ where: { date } });
     return NextResponse.json(log ?? { date: date.toISOString() });
   } catch (error) {
     console.error(error);
@@ -52,33 +58,38 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// POST /api/habits — upsert today's log
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const body: Record<string, unknown> = await req.json();
     const { date: dateStr, winOfDay, ...habitFields } = body;
 
-    const date = dateStr
-      ? startOfDay(parseISO(dateStr))
-      : startOfDay(new Date());
+    const date =
+      typeof dateStr === "string"
+        ? startOfDay(parseISO(dateStr))
+        : startOfDay(new Date());
 
-    // Build update data — only include valid habit keys
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const data: any = {};
+    const update: HabitUpdateData = {};
     for (const key of HABIT_KEYS) {
-      if (habitFields[key] !== undefined) data[key] = Boolean(habitFields[key]);
+      if (habitFields[key] !== undefined) {
+        (update as Record<string, unknown>)[key] = Boolean(habitFields[key]);
+      }
     }
-    if (winOfDay !== undefined) data.winOfDay = winOfDay;
+    if (winOfDay !== undefined) update.winOfDay = String(winOfDay);
 
-    // Fetch current state to compute XP correctly
+    // Merge with existing to compute XP
     const existing = await prisma.dailyLog.findUnique({ where: { date } });
-    const merged = { ...Object.fromEntries(HABIT_KEYS.map((k) => [k, existing?.[k] ?? false])), ...data };
-    data.xp = computeXP(merged as Record<HabitKey, boolean>);
+    const merged = Object.fromEntries(
+      HABIT_KEYS.map((k) => [k, existing ? Boolean(existing[k as keyof typeof existing]) : false])
+    );
+    for (const key of HABIT_KEYS) {
+      if (habitFields[key] !== undefined) merged[key] = Boolean(habitFields[key]);
+    }
+    update.xp = computeXP(merged as Record<HabitKey, boolean>);
 
     const log = await prisma.dailyLog.upsert({
       where: { date },
-      update: data,
-      create: { date, ...data },
+      update,
+      create: { date, ...update },
     });
 
     return NextResponse.json(log);

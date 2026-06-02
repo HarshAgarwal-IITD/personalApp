@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { format, parseISO, isValid, startOfDay, endOfDay } from "date-fns";
 import * as XLSX from "xlsx";
+import { Category, Prisma } from "@prisma/client";
 
 export async function GET(req: NextRequest) {
   try {
@@ -10,19 +11,23 @@ export async function GET(req: NextRequest) {
     const startDate = searchParams.get("startDate");
     const endDate = searchParams.get("endDate");
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const where: any = {};
-    if (category && category !== "ALL") where.category = category;
+    const where: Prisma.ExpenseWhereInput = {};
+
+    if (category && category !== "ALL") {
+      where.category = category as Category;
+    }
+
     if (startDate || endDate) {
-      where.date = {};
+      const dateFilter: Prisma.DateTimeFilter = {};
       if (startDate) {
         const d = parseISO(startDate);
-        if (isValid(d)) where.date.gte = startOfDay(d);
+        if (isValid(d)) dateFilter.gte = startOfDay(d);
       }
       if (endDate) {
         const d = parseISO(endDate);
-        if (isValid(d)) where.date.lte = endOfDay(d);
+        if (isValid(d)) dateFilter.lte = endOfDay(d);
       }
+      where.date = dateFilter;
     }
 
     const expenses = await prisma.expense.findMany({
@@ -34,23 +39,18 @@ export async function GET(req: NextRequest) {
       Date: format(new Date(e.date), "dd/MM/yyyy"),
       Category: e.category,
       Amount: e.amount,
-      Description: e.description || "",
+      Description: e.description ?? "",
     }));
 
     const ws = XLSX.utils.json_to_sheet(rows);
-    ws["!cols"] = [
-      { wch: 14 },
-      { wch: 12 },
-      { wch: 10 },
-      { wch: 40 },
-    ];
+    ws["!cols"] = [{ wch: 14 }, { wch: 12 }, { wch: 10 }, { wch: 40 }];
 
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Expenses");
 
-    const buffer = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
+    const rawBuffer = XLSX.write(wb, { type: "array", bookType: "xlsx" }) as ArrayBuffer;
 
-    return new NextResponse(buffer, {
+    return new NextResponse(rawBuffer, {
       headers: {
         "Content-Type":
           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

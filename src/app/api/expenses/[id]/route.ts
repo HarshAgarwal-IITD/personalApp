@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+import { Category, Prisma } from "@prisma/client";
 
 export async function PATCH(
   req: NextRequest,
@@ -7,19 +8,21 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
-    const body = await req.json();
+    const body: {
+      amount?: string | number;
+      category?: string;
+      description?: string;
+      date?: string;
+    } = await req.json();
     const { amount, category, description, date } = body;
 
-    const expense = await prisma.expense.update({
-      where: { id },
-      data: {
-        ...(amount !== undefined && { amount: parseFloat(amount) }),
-        ...(category !== undefined && { category }),
-        ...(description !== undefined && { description }),
-        ...(date !== undefined && { date: new Date(date) }),
-      },
-    });
+    const data: Prisma.ExpenseUpdateInput = {};
+    if (amount !== undefined) data.amount = parseFloat(String(amount));
+    if (category !== undefined) data.category = category as Category;
+    if (description !== undefined) data.description = description;
+    if (date !== undefined) data.date = new Date(date);
 
+    const expense = await prisma.expense.update({ where: { id }, data });
     return NextResponse.json(expense);
   } catch (error) {
     console.error(error);

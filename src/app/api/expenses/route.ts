@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+import { Category, Prisma } from "@prisma/client";
 import {
   startOfDay,
   endOfDay,
@@ -16,11 +17,10 @@ export async function GET(req: NextRequest) {
     const endDate = searchParams.get("endDate");
     const limit = searchParams.get("limit");
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const where: any = {};
+    const where: Prisma.ExpenseWhereInput = {};
 
     if (category && category !== "ALL") {
-      where.category = category;
+      where.category = category as Category;
     }
 
     if (search) {
@@ -28,15 +28,16 @@ export async function GET(req: NextRequest) {
     }
 
     if (startDate || endDate) {
-      where.date = {};
+      const dateFilter: Prisma.DateTimeFilter = {};
       if (startDate) {
         const d = parseISO(startDate);
-        if (isValid(d)) where.date.gte = startOfDay(d);
+        if (isValid(d)) dateFilter.gte = startOfDay(d);
       }
       if (endDate) {
         const d = parseISO(endDate);
-        if (isValid(d)) where.date.lte = endOfDay(d);
+        if (isValid(d)) dateFilter.lte = endOfDay(d);
       }
+      where.date = dateFilter;
     }
 
     const expenses = await prisma.expense.findMany({
@@ -57,7 +58,12 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const body: {
+      amount?: string | number;
+      category?: string;
+      description?: string;
+      date?: string;
+    } = await req.json();
     const { amount, category, description, date } = body;
 
     if (!amount || !category) {
@@ -69,9 +75,9 @@ export async function POST(req: NextRequest) {
 
     const expense = await prisma.expense.create({
       data: {
-        amount: parseFloat(amount),
-        category,
-        description: description || null,
+        amount: parseFloat(String(amount)),
+        category: category as Category,
+        description: description ?? null,
         date: date ? new Date(date) : new Date(),
       },
     });

@@ -1,18 +1,16 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
-import { Priority } from "@prisma/client";
+import { Priority, Prisma } from "@prisma/client";
 
-// GET /api/tasks?completed=false
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const completed = searchParams.get("completed");
-    const priority = searchParams.get("priority") as Priority | null;
+    const priority = searchParams.get("priority");
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const where: any = {};
+    const where: Prisma.TaskWhereInput = {};
     if (completed !== null) where.completed = completed === "true";
-    if (priority) where.priority = priority;
+    if (priority) where.priority = priority as Priority;
 
     const tasks = await prisma.task.findMany({
       where,
@@ -26,10 +24,14 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// POST /api/tasks
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const body: {
+      title?: string;
+      description?: string;
+      priority?: string;
+      dueDate?: string;
+    } = await req.json();
     const { title, description, priority, dueDate } = body;
 
     if (!title?.trim()) {
@@ -39,8 +41,8 @@ export async function POST(req: NextRequest) {
     const task = await prisma.task.create({
       data: {
         title: title.trim(),
-        description: description || null,
-        priority: priority ?? "MEDIUM",
+        description: description ?? null,
+        priority: (priority ?? "MEDIUM") as Priority,
         dueDate: dueDate ? new Date(dueDate) : null,
       },
     });

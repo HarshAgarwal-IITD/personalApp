@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+import { Priority, Prisma } from "@prisma/client";
 
 export async function PATCH(
   req: NextRequest,
@@ -7,23 +8,26 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
-    const body = await req.json();
+    const body: {
+      title?: string;
+      description?: string;
+      priority?: string;
+      dueDate?: string | null;
+      completed?: boolean;
+    } = await req.json();
     const { title, description, priority, dueDate, completed } = body;
 
-    const task = await prisma.task.update({
-      where: { id },
-      data: {
-        ...(title !== undefined && { title: title.trim() }),
-        ...(description !== undefined && { description }),
-        ...(priority !== undefined && { priority }),
-        ...(dueDate !== undefined && { dueDate: dueDate ? new Date(dueDate) : null }),
-        ...(completed !== undefined && {
-          completed,
-          completedAt: completed ? new Date() : null,
-        }),
-      },
-    });
+    const data: Prisma.TaskUpdateInput = {};
+    if (title !== undefined) data.title = title.trim();
+    if (description !== undefined) data.description = description;
+    if (priority !== undefined) data.priority = priority as Priority;
+    if (dueDate !== undefined) data.dueDate = dueDate ? new Date(dueDate) : null;
+    if (completed !== undefined) {
+      data.completed = completed;
+      data.completedAt = completed ? new Date() : null;
+    }
 
+    const task = await prisma.task.update({ where: { id }, data });
     return NextResponse.json(task);
   } catch (error) {
     console.error(error);
