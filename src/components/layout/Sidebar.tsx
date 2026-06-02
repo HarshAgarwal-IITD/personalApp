@@ -8,14 +8,16 @@ import {
   Receipt,
   PiggyBank,
   TrendingUp,
+  CheckSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/analytics", label: "Analytics", icon: BarChart3 },
-  { href: "/expenses", label: "Expenses", icon: Receipt },
-  { href: "/budgets", label: "Budgets", icon: PiggyBank },
+  { href: "/analytics",  label: "Analytics",  icon: BarChart3 },
+  { href: "/expenses",   label: "Expenses",   icon: Receipt },
+  { href: "/budgets",    label: "Budgets",    icon: PiggyBank },
+  { href: "/tasks",      label: "Tasks",      icon: CheckSquare },
 ];
 
 export function Sidebar() {

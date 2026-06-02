@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getCategoryLabel, parseExpenseMessage } from "@/lib/parser";
 import { Telegraf, Context } from "telegraf";
-import { Category } from "@prisma/client";
+import { Category, Expense } from "@prisma/client";
 import {
   startOfDay,
   endOfDay,
@@ -92,7 +92,7 @@ bot.command("today", async (ctx) => {
       totals[e.category] = (totals[e.category] || 0) + e.amount;
     }
 
-    const grandTotal = expenses.reduce((sum, e) => sum + e.amount, 0);
+    const grandTotal = expenses.reduce((sum: number, e: Expense) => sum + e.amount, 0);
 
     let msg = `📅 *Today's Expenses*\n\n`;
     for (const [cat, total] of Object.entries(totals)) {
@@ -129,7 +129,7 @@ bot.command("month", async (ctx) => {
       totals[e.category] = (totals[e.category] || 0) + e.amount;
     }
 
-    const grandTotal = expenses.reduce((sum, e) => sum + e.amount, 0);
+    const grandTotal = expenses.reduce((sum: number, e: Expense) => sum + e.amount, 0);
     const monthLabel = format(now, "MMMM yyyy");
 
     let msg = `📊 *${monthLabel}*\n\n`;
@@ -168,7 +168,7 @@ for (const [command, category] of Object.entries(categoryCommandMap)) {
         },
       });
 
-      const total = expenses.reduce((sum, e) => sum + e.amount, 0);
+      const total = expenses.reduce((sum: number, e: Expense) => sum + e.amount, 0);
       const monthLabel = format(now, "MMMM yyyy");
 
       ctx.reply(

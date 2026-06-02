@@ -19,6 +19,10 @@ const pageTitles: Record<string, { title: string; subtitle: string }> = {
     title: "Budgets",
     subtitle: "Monthly budget tracking",
   },
+  "/tasks": {
+    title: "Tasks & Habits",
+    subtitle: "Daily quests · XP · Streaks",
+  },
 };
 
 export function Header() {
