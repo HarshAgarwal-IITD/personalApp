@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Priority } from "@prisma/client";
+import { Priority } from "@/types";
 import { format, isToday, isTomorrow, isPast } from "date-fns";
 import { Plus, Trash2, Check, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ExpenseWithId, CATEGORY_COLORS, CATEGORY_LABELS, ALL_CATEGORIES } from "@/types";
-import { Category } from "@prisma/client";
+import { Category } from "@/types";
 import { format } from "date-fns";
 import { Pencil, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";

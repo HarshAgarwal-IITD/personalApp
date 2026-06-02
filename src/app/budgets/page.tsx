@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { BudgetCard } from "@/components/budgets/BudgetCard";
 import { BudgetDialog } from "@/components/budgets/BudgetDialog";
 import { BudgetWithId, BudgetWithUsage, CATEGORY_LABELS } from "@/types";
-import { Category } from "@prisma/client";
+import { Category } from "@/types";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,

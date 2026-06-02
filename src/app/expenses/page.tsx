@@ -5,7 +5,7 @@ import { ExpenseTable } from "@/components/expenses/ExpenseTable";
 import { ExpenseDialog } from "@/components/expenses/ExpenseDialog";
 import { ExpenseCalendar } from "@/components/calendar/ExpenseCalendar";
 import { ExpenseWithId, ALL_CATEGORIES, CATEGORY_LABELS } from "@/types";
-import { Category } from "@prisma/client";
+import { Category } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {

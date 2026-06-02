@@ -10,7 +10,7 @@ import {
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CATEGORY_COLORS, CATEGORY_LABELS, CategoryTotal } from "@/types";
-import { Category } from "@prisma/client";
+import { Category } from "@/types";
 
 interface CategoryPieChartProps {
   data: CategoryTotal[];

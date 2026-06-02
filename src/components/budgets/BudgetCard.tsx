@@ -1,7 +1,7 @@
 "use client";
 
 import { BudgetWithUsage, CATEGORY_COLORS, CATEGORY_LABELS } from "@/types";
-import { Category } from "@prisma/client";
+import { Category } from "@/types";
 import { Pencil, Trash2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";

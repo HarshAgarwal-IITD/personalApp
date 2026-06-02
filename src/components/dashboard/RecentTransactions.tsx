@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CATEGORY_COLORS, CATEGORY_LABELS, ExpenseWithId } from "@/types";
 import { format } from "date-fns";
-import { Category } from "@prisma/client";
+import { Category } from "@/types";
 
 interface RecentTransactionsProps {
   expenses: ExpenseWithId[];

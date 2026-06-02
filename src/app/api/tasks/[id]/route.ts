@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
-import { Priority } from "@prisma/client";
+import { Priority } from "@/types";
 
 export async function PATCH(
   req: NextRequest,

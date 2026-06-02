@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { format, parseISO, isValid, startOfDay, endOfDay } from "date-fns";
 import * as XLSX from "xlsx";
-import { Category } from "@prisma/client";
+import { Category } from "@/types";
 
 export async function GET(req: NextRequest) {
   try {

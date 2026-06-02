@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ExpenseWithId, ALL_CATEGORIES, CATEGORY_LABELS } from "@/types";
-import { Category } from "@prisma/client";
+import { Category } from "@/types";
 import { format } from "date-fns";
 import {
   Dialog,

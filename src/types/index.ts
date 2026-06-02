@@ -1,5 +1,14 @@
-import { Category } from "@prisma/client";
+export type Category = "FOOD" | "TRAVEL" | "RENT" | "AMENITIES" | "OTHERS";
+export type Priority = "LOW" | "MEDIUM" | "HIGH";
 
+export type Expense = {
+  id: string;
+  amount: number;
+  category: Category;
+  description: string | null;
+  date: Date;
+  createdAt: Date;
+};
 export type ExpenseWithId = {
   id: string;
   amount: number;

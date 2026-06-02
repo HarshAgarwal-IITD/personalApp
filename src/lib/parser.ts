@@ -1,4 +1,4 @@
-import { Category } from "@prisma/client";
+import { Category } from "@/types";
 
 export type ParsedExpense = {
   success: true;
@@ -13,12 +13,12 @@ export type ParseError = {
 };
 
 const CATEGORY_MAP: Record<string, Category> = {
-  food: Category.FOOD,
-  travel: Category.TRAVEL,
-  rent: Category.RENT,
-  amenities: Category.AMENITIES,
-  others: Category.OTHERS,
-  other: Category.OTHERS,
+  food: "FOOD",
+  travel: "TRAVEL",
+  rent: "RENT",
+  amenities: "AMENITIES",
+  others: "OTHERS",
+  other: "OTHERS",
 };
 
 export function parseExpenseMessage(

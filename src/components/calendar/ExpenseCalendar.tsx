@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { CalendarGrid } from "@/components/calendar/CalendarGrid";
 import { CATEGORY_COLORS, CATEGORY_LABELS } from "@/types";
-import { Category } from "@prisma/client";
+import { Category } from "@/types";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";

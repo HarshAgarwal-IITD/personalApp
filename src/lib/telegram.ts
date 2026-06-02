@@ -3,7 +3,7 @@ import { getCategoryLabel, parseExpenseMessage } from "@/lib/parser";
 import { HABITS, HabitKey, computeXP, getRank } from "@/lib/habits";
 import { computeHabitStreaks, computeOverallStreak } from "@/lib/streaks";
 import { Telegraf, Context } from "telegraf";
-import { Category, Expense } from "@prisma/client";
+import { Category, Expense } from "@/types";
 import {
   startOfDay,
   endOfDay,
