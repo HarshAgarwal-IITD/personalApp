@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+import { Expense } from "@prisma/client";
 import {
   startOfDay,
   endOfDay,
@@ -26,19 +27,19 @@ export async function GET(req: NextRequest) {
     const todayExpenses = await prisma.expense.findMany({
       where: { date: { gte: startOfDay(now), lte: endOfDay(now) } },
     });
-    const todayTotal = todayExpenses.reduce((s, e) => s + e.amount, 0);
+    const todayTotal = todayExpenses.reduce((s: number, e: Expense) => s + e.amount, 0);
 
     // Week total (last 7 days)
     const weekExpenses = await prisma.expense.findMany({
       where: { date: { gte: startOfDay(subDays(now, 6)), lte: endOfDay(now) } },
     });
-    const weekTotal = weekExpenses.reduce((s, e) => s + e.amount, 0);
+    const weekTotal = weekExpenses.reduce((s: number, e: Expense) => s + e.amount, 0);
 
     // Month total
     const monthExpenses = await prisma.expense.findMany({
       where: { date: { gte: startOfMonth(now), lte: endOfMonth(now) } },
     });
-    const monthTotal = monthExpenses.reduce((s, e) => s + e.amount, 0);
+    const monthTotal = monthExpenses.reduce((s: number, e: Expense) => s + e.amount, 0);
 
     // Category breakdown (current month)
     const categoryMap: Record<string, number> = {};
