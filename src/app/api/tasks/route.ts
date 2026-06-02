@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
-import { Priority, Prisma } from "@prisma/client";
+import { Priority } from "@prisma/client";
 
 export async function GET(req: NextRequest) {
   try {
@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
     const completed = searchParams.get("completed");
     const priority = searchParams.get("priority");
 
-    const where: Prisma.TaskWhereInput = {};
+    const where: Record<string, any> = {};
     if (completed !== null) where.completed = completed === "true";
     if (priority) where.priority = priority as Priority;
 

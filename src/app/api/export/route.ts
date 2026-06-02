@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { format, parseISO, isValid, startOfDay, endOfDay } from "date-fns";
 import * as XLSX from "xlsx";
-import { Category, Prisma } from "@prisma/client";
+import { Category } from "@prisma/client";
 
 export async function GET(req: NextRequest) {
   try {
@@ -11,14 +11,14 @@ export async function GET(req: NextRequest) {
     const startDate = searchParams.get("startDate");
     const endDate = searchParams.get("endDate");
 
-    const where: Prisma.ExpenseWhereInput = {};
+    const where: Record<string, any> = {};
 
     if (category && category !== "ALL") {
       where.category = category as Category;
     }
 
     if (startDate || endDate) {
-      const dateFilter: Prisma.DateTimeFilter = {};
+      const dateFilter: Record<string, any> = {};
       if (startDate) {
         const d = parseISO(startDate);
         if (isValid(d)) dateFilter.gte = startOfDay(d);

@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
-import { Category, Prisma } from "@prisma/client";
+import { Category } from "@prisma/client";
 
 export async function PATCH(
   req: NextRequest,
@@ -16,7 +16,7 @@ export async function PATCH(
     } = await req.json();
     const { amount, category, description, date } = body;
 
-    const data: Prisma.ExpenseUpdateInput = {};
+    const data: Record<string, any> = {};
     if (amount !== undefined) data.amount = parseFloat(String(amount));
     if (category !== undefined) data.category = category as Category;
     if (description !== undefined) data.description = description;

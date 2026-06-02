@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
-import { Category, Prisma } from "@prisma/client";
+import { Category } from "@prisma/client";
 import {
   startOfDay,
   endOfDay,
@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
     const endDate = searchParams.get("endDate");
     const limit = searchParams.get("limit");
 
-    const where: Prisma.ExpenseWhereInput = {};
+    const where: Record<string, any> = {};
 
     if (category && category !== "ALL") {
       where.category = category as Category;
@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
     }
 
     if (startDate || endDate) {
-      const dateFilter: Prisma.DateTimeFilter = {};
+      const dateFilter: Record<string, any> = {};
       if (startDate) {
         const d = parseISO(startDate);
         if (isValid(d)) dateFilter.gte = startOfDay(d);

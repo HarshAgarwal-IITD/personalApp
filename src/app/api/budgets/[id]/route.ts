@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
-import { Prisma } from "@prisma/client";
 
 export async function PATCH(
   req: NextRequest,
@@ -11,7 +10,7 @@ export async function PATCH(
     const body: { monthlyLimit?: string | number } = await req.json();
     const { monthlyLimit } = body;
 
-    const data: Prisma.BudgetUpdateInput = {};
+    const data: Record<string, any> = {};
     if (monthlyLimit !== undefined) {
       data.monthlyLimit = parseFloat(String(monthlyLimit));
     }

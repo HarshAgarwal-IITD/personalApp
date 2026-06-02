@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
-import { Priority, Prisma } from "@prisma/client";
+import { Priority } from "@prisma/client";
 
 export async function PATCH(
   req: NextRequest,
@@ -17,7 +17,7 @@ export async function PATCH(
     } = await req.json();
     const { title, description, priority, dueDate, completed } = body;
 
-    const data: Prisma.TaskUpdateInput = {};
+    const data: Record<string, any> = {};
     if (title !== undefined) data.title = title.trim();
     if (description !== undefined) data.description = description;
     if (priority !== undefined) data.priority = priority as Priority;
