@@ -1,0 +1,42 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Category {
+  RENT
+  TRAVEL
+  FOOD
+  AMENITIES
+  OTHERS
+}
+
+model Expense {
+  id          String   @id @default(cuid())
+  amount      Float
+  category    Category
+  description String?
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  @@index([category])
+  @@index([date])
+}
+
+model Budget {
+  id           String   @id @default(cuid())
+  category     Category
+  monthlyLimit Float
+  month        Int
+  year         Int
+  createdAt    DateTime @default(now())
+
+  @@unique([category, month, year])
+  @@index([month, year])
+}
