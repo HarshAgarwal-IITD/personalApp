@@ -2,11 +2,10 @@
 
 import { useState } from "react";
 import { HabitsTab } from "@/components/tasks/HabitsTab";
-import { TasksTab } from "@/components/tasks/TasksTab";
 import { HabitCalendar } from "@/components/calendar/HabitCalendar";
 import { cn } from "@/lib/utils";
 
-type Tab = "habits" | "calendar" | "tasks";
+type Tab = "habits" | "calendar";
 
 export default function TasksPage() {
   const [tab, setTab] = useState<Tab>("habits");
@@ -14,7 +13,6 @@ export default function TasksPage() {
   const tabs: { id: Tab; label: string }[] = [
     { id: "habits",   label: "🏆 Today's Habits" },
     { id: "calendar", label: "📅 Habit Calendar"  },
-    { id: "tasks",    label: "✅ To-Do List"      },
   ];
 
   return (
@@ -40,7 +38,6 @@ export default function TasksPage() {
       {/* Tab content */}
       {tab === "habits"   && <HabitsTab />}
       {tab === "calendar" && <HabitCalendar />}
-      {tab === "tasks"    && <TasksTab />}
     </div>
   );
 }
