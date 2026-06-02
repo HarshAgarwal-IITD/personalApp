@@ -17,6 +17,12 @@ enum Category {
   OTHERS
 }
 
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
 model Expense {
   id          String   @id @default(cuid())
   amount      Float
@@ -39,4 +45,38 @@ model Budget {
 
   @@unique([category, month, year])
   @@index([month, year])
+}
+
+// One record per calendar day
+model DailyLog {
+  id          String   @id @default(cuid())
+  date        DateTime @unique
+  exercise    Boolean  @default(false)
+  meditation  Boolean  @default(false)
+  nof         Boolean  @default(false)
+  reading     Boolean  @default(false)
+  socialising Boolean  @default(false)
+  officeWork  Boolean  @default(false)
+  learning    Boolean  @default(false)
+  winOfDay    String?
+  xp          Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([date])
+}
+
+model Task {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  priority    Priority  @default(MEDIUM)
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+  dueDate     DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([completed])
+  @@index([createdAt])
 }
