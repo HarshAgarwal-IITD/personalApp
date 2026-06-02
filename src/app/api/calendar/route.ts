@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+import { Expense } from "@/types";
 import {
   startOfMonth,
   endOfMonth,
@@ -51,7 +52,7 @@ export async function GET(req: NextRequest) {
         };
       });
 
-      return NextResponse.json({ days, monthTotal: expenses.reduce((s, e) => s + e.amount, 0) });
+      return NextResponse.json({ days, monthTotal: expenses.reduce((s: number, e: Expense) => s + e.amount, 0) });
     }
 
     if (type === "habits") {

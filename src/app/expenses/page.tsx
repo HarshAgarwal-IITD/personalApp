@@ -71,7 +71,7 @@ export default function ExpensesPage() {
     setExporting(false);
   };
 
-  const total = expenses.reduce((s, e) => s + e.amount, 0);
+  const total = expenses.reduce((s: number, e: ExpenseWithId) => s + e.amount, 0);
 
   return (
     <div className="space-y-6">

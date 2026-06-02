@@ -65,7 +65,7 @@ export function HabitCalendar() {
   // Monthly stats
   const loggedDays = days.filter((d) => d.hasLog);
   const avgXP = loggedDays.length
-    ? Math.round(loggedDays.reduce((s, d) => s + d.xp, 0) / loggedDays.length)
+    ? Math.round(loggedDays.reduce((s: number, d: HabitDay) => s + d.xp, 0) / loggedDays.length)
     : 0;
   const perfectDays = days.filter((d) => d.xp === 100).length;
 

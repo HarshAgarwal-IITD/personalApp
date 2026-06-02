@@ -47,7 +47,7 @@ export function HabitsTab() {
   useEffect(() => { fetchData(); }, [fetchData]);
 
   const xp = HABITS.reduce(
-    (sum, h) => sum + (log[h.key as HabitKey] ? h.xp : 0),
+    (sum: number, h: typeof HABITS[number]) => sum + (log[h.key as HabitKey] ? h.xp : 0),
     0
   );
   const rank = getRank(xp);
