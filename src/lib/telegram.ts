@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getCategoryLabel, parseExpenseMessage } from "@/lib/parser";
+import { HABITS, HabitKey, computeXP, getRank } from "@/lib/habits";
+import { computeHabitStreaks, computeOverallStreak } from "@/lib/streaks";
 import { Telegraf, Context } from "telegraf";
 import { Category, Expense } from "@prisma/client";
 import {
@@ -284,6 +286,181 @@ bot.command("budgetstatus", async (ctx) => {
     ctx.reply(msg, { parse_mode: "Markdown" });
   } catch {
     ctx.reply("❌ Failed to fetch budget status.");
+  }
+});
+
+// /xp — today's XP and rank
+bot.command("xp", async (ctx) => {
+  if (!isAuthorized(ctx)) return;
+  try {
+    const today = startOfDay(new Date());
+    const log = await prisma.dailyLog.findUnique({ where: { date: today } });
+    const habitValues = Object.fromEntries(
+      (HABITS.map((h) => [h.key, log?.[h.key as HabitKey] ?? false]))
+    ) as Record<HabitKey, boolean>;
+    const xp = computeXP(habitValues);
+    const rank = getRank(xp);
+    const done = HABITS.filter((h) => log?.[h.key as HabitKey]).map((h) => h.emoji).join(" ");
+    const remaining = HABITS.filter((h) => !log?.[h.key as HabitKey]).map((h) => `${h.emoji} ${h.label}`).join(", ");
+
+    ctx.reply(
+      `${rank.emoji} *${rank.label}* — ${xp}/100 XP\n\n` +
+      (done ? `✅ Done: ${done}\n` : "") +
+      (remaining ? `⏳ Remaining: ${remaining}` : "🎯 All habits done!"),
+      { parse_mode: "Markdown" }
+    );
+  } catch {
+    ctx.reply("❌ Failed to fetch XP.");
+  }
+});
+
+// /streak — per-habit streaks
+bot.command("streak", async (ctx) => {
+  if (!isAuthorized(ctx)) return;
+  try {
+    const [habitStreaks, overall] = await Promise.all([
+      computeHabitStreaks(),
+      computeOverallStreak(),
+    ]);
+
+    let msg = `🔥 *Streak Report*\n\n`;
+    msg += `Overall (≥50 XP/day): *${overall} days*\n\n`;
+    for (const h of HABITS) {
+      const s = habitStreaks[h.key as HabitKey] ?? 0;
+      msg += `${h.emoji} ${h.label}: ${s > 0 ? `*${s} days*` : "—"}\n`;
+    }
+
+    ctx.reply(msg, { parse_mode: "Markdown" });
+  } catch {
+    ctx.reply("❌ Failed to fetch streaks.");
+  }
+});
+
+// /done <habit> — mark a habit as done today
+// /done all — mark all done
+bot.command("done", async (ctx) => {
+  if (!isAuthorized(ctx)) return;
+  const args = ctx.message.text.split(/\s+/).slice(1).join(" ").toLowerCase().trim();
+
+  if (!args) {
+    return ctx.reply(
+      "Usage: /done <habit>\nHabits: exercise, meditation, nof, reading, socialising, officework, learning\nOr: /done all"
+    );
+  }
+
+  const habitKeyMap: Record<string, HabitKey> = {
+    exercise: "exercise", gym: "exercise",
+    meditation: "meditation", meditate: "meditation",
+    nof: "nof", nofap: "nof",
+    reading: "reading", read: "reading",
+    socialising: "socialising", social: "socialising",
+    officework: "officeWork", office: "officeWork", work: "officeWork",
+    learning: "learning", learn: "learning",
+  };
+
+  try {
+    const today = startOfDay(new Date());
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const data: any = {};
+
+    if (args === "all") {
+      for (const h of HABITS) data[h.key] = true;
+    } else {
+      const key = habitKeyMap[args];
+      if (!key) return ctx.reply(`❌ Unknown habit: "${args}"\nTry: exercise, meditation, nof, reading, socialising, officework, learning`);
+      data[key] = true;
+    }
+
+    const existing = await prisma.dailyLog.findUnique({ where: { date: today } });
+    const merged = Object.fromEntries(HABITS.map((h) => [h.key, existing?.[h.key as HabitKey] ?? false]));
+    Object.assign(merged, data);
+    const xp = computeXP(merged as Record<HabitKey, boolean>);
+    const rank = getRank(xp);
+
+    await prisma.dailyLog.upsert({
+      where: { date: today },
+      update: { ...data, xp },
+      create: { date: today, ...data, xp },
+    });
+
+    const markedLabels = args === "all"
+      ? "All habits"
+      : HABITS.find((h) => h.key === habitKeyMap[args])?.label ?? args;
+
+    ctx.reply(
+      `✅ *${markedLabels} marked done!*\n\n${rank.emoji} ${rank.label} — ${xp}/100 XP`,
+      { parse_mode: "Markdown" }
+    );
+  } catch {
+    ctx.reply("❌ Failed to update habit.");
+  }
+});
+
+// /todo <title> — add a task
+bot.command("todo", async (ctx) => {
+  if (!isAuthorized(ctx)) return;
+  const title = ctx.message.text.split(/\s+/).slice(1).join(" ").trim();
+  if (!title) return ctx.reply("Usage: /todo <task title>\nExample: /todo Buy groceries");
+
+  try {
+    const task = await prisma.task.create({
+      data: { title, priority: "MEDIUM" },
+    });
+    ctx.reply(`✅ *Task added*\n\n📝 ${task.title}`, { parse_mode: "Markdown" });
+  } catch {
+    ctx.reply("❌ Failed to add task.");
+  }
+});
+
+// /todos — list pending tasks
+bot.command("todos", async (ctx) => {
+  if (!isAuthorized(ctx)) return;
+  try {
+    const tasks = await prisma.task.findMany({
+      where: { completed: false },
+      orderBy: [{ priority: "desc" }, { createdAt: "asc" }],
+      take: 15,
+    });
+
+    if (tasks.length === 0) return ctx.reply("🎉 No pending tasks!");
+
+    const priorityEmoji: Record<string, string> = { HIGH: "🔴", MEDIUM: "🟡", LOW: "🟢" };
+    let msg = `📋 *Pending Tasks (${tasks.length})*\n\n`;
+    tasks.forEach((t, i) => {
+      msg += `${priorityEmoji[t.priority]} ${i + 1}. ${t.title}\n`;
+    });
+    msg += `\nUse /check <number> to complete a task.`;
+
+    ctx.reply(msg, { parse_mode: "Markdown" });
+  } catch {
+    ctx.reply("❌ Failed to fetch tasks.");
+  }
+});
+
+// /check <number> — complete task by list index
+bot.command("check", async (ctx) => {
+  if (!isAuthorized(ctx)) return;
+  const num = parseInt(ctx.message.text.split(/\s+/)[1] ?? "", 10);
+  if (isNaN(num) || num < 1) return ctx.reply("Usage: /check <number>\nUse /todos to see task numbers.");
+
+  try {
+    const tasks = await prisma.task.findMany({
+      where: { completed: false },
+      orderBy: [{ priority: "desc" }, { createdAt: "asc" }],
+      take: 15,
+    });
+
+    const task = tasks[num - 1];
+    if (!task) return ctx.reply(`❌ No task at position ${num}. Use /todos to see the list.`);
+
+    await prisma.task.update({
+      where: { id: task.id },
+      data: { completed: true, completedAt: new Date() },
+    });
+
+    ctx.reply(`✅ *Completed:* ${task.title}`, { parse_mode: "Markdown" });
+  } catch {
+    ctx.reply("❌ Failed to complete task.");
   }
 });
 
