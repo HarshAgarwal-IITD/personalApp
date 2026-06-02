@@ -52,7 +52,7 @@ export async function GET(req: NextRequest) {
         };
       });
 
-      const monthTotal = expenses.reduce<number>((sum, e) => sum + e.amount, 0);
+      const monthTotal = expenses.reduce<number>((sum: number, e: Expense) => sum + e.amount, 0);
       return NextResponse.json({ days, monthTotal });
     }
 
