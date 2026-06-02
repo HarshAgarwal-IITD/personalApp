@@ -52,7 +52,8 @@ export async function GET(req: NextRequest) {
         };
       });
 
-      return NextResponse.json({ days, monthTotal: expenses.reduce((s: number, e: Expense) => s + e.amount, 0) });
+      const monthTotal = expenses.reduce<number>((sum, e) => sum + e.amount, 0);
+      return NextResponse.json({ days, monthTotal });
     }
 
     if (type === "habits") {
